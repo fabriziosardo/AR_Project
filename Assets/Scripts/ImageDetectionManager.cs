@@ -7,29 +7,29 @@ using UnityEngine.XR.ARSubsystems;
 // This script manages the detection of images in AR and spawns characters based on the detected images.
 public class ImageDetectionManager : MonoBehaviour
 {
-    [Header("Configurazione AR")]
+    [Header("AR Configuration")]
     [SerializeField] private ARTrackedImageManager trackedImageManager;
     [SerializeField] private ARAnchorManager anchorManager;
 
 
-    [Header("Database Opere d'Arte")]
+    [Header("Artworks Database")]
     [SerializeField] private ArtworkData[] artworksDatabase;
 
-    [Header("Impostazioni Spawning")]
-    [SerializeField] private LayerMask groundLayerMask = 1; // Layer del ground plane per il raycast
+    [Header("Spawning Information")]
+    [SerializeField] private LayerMask groundLayerMask = 1; // Ground plane layer for raycasting.
 
-    [Header("Impostazioni Stabilità")]
-    [SerializeField] private float minTrackingTime = 2.0f; // Tempo minimo di tracking prima di creare l'anchor
-    [SerializeField] private bool useAnchors = true; // Flag per abilitare/disabilitare gli anchor
+    [Header("Stability Settings")]
+    [SerializeField] private float minTrackingTime = 2.0f; // Minimum time before creating an anchor.
+    [SerializeField] private bool useAnchors = true; // Flag to enable/disable anchors.
 
 
-    // Dictionary per accesso rapido ai dati delle opere tramite nome immagine
+    // Dictionary for quick lookup to artwork data by reference name.
     private Dictionary<string, ArtworkData> artworkLookup;
 
     // Dictionary per tenere traccia dei personaggi già spawnati per ogni immagine
     // private Dictionary<TrackableId, GameObject> spawnedCharacters;
 
-    // Classe per tenere traccia dello stato di ogni personaggio
+    // Private class for managing character states
     [System.Serializable]
     private class CharacterState
     {
@@ -49,19 +49,19 @@ public class ImageDetectionManager : MonoBehaviour
         }
     }
 
-    // Dictionary per tenere traccia dei personaggi e del loro stato
+    // Dictionary for managing character states by trackable ID
     private Dictionary<TrackableId, CharacterState> characterStates;
 
 
     void Start()
     {
-        // Inizializziamo le strutture dati
+        // Data structures initialization
         InitializeArtworkLookup();
         //spawnedCharacters = new Dictionary<TrackableId, GameObject>();
         characterStates = new Dictionary<TrackableId, CharacterState>();
 
 
-        // Se non è stato assegnato il TrackedImageManager nell'inspector, proviamo a trovarlo ---- Si può togliere
+        // Se non è stato assegnato il TrackedImageManager o l'AnchorManager nell'inspector, proviamo a trovarli
         if (trackedImageManager == null)
         {
             trackedImageManager = FindAnyObjectByType<ARTrackedImageManager>();
@@ -72,7 +72,7 @@ public class ImageDetectionManager : MonoBehaviour
             }
         }
 
-        // Added in new version
+        
         if (anchorManager == null && useAnchors)
         {
             anchorManager = FindAnyObjectByType<ARAnchorManager>();
@@ -110,7 +110,7 @@ public class ImageDetectionManager : MonoBehaviour
         }
     }
 
-    // Metodi per eventi
+    // Event methods
 
     void OnEnable() => trackedImageManager.trackablesChanged.AddListener(OnChanged);
 
@@ -118,19 +118,19 @@ public class ImageDetectionManager : MonoBehaviour
 
     void OnChanged(ARTrackablesChangedEventArgs<ARTrackedImage> eventArgs)
     {
-        // Gestiamo le nuove immagini rilevate
+        // Handling the addition of new tracked images
         foreach (ARTrackedImage trackedImage in eventArgs.added)
         {
             HandleImageDetected(trackedImage);
         }
 
-        // Gestiamo gli aggiornamenti delle immagini già tracciate
+        // Handling updated tracked images
         foreach (ARTrackedImage trackedImage in eventArgs.updated)
         {
             HandleImageUpdated(trackedImage);
         }
 
-        // Gestiamo le immagini che non sono più tracciate
+        // Handling removed tracked images
         foreach (var trackedImage in eventArgs.removed)
         {
             //TrackableId removedImageTrackableId = trackedImage.Key;
@@ -369,7 +369,7 @@ public class ImageDetectionManager : MonoBehaviour
         Pose anchorPose = new Pose(characterState.character.transform.position,
                                   characterState.character.transform.rotation);
 
-        // Metodo aggiornato per ARFoundation 6.2
+        // ARFoundation 6.2
         var anchorRequest = await anchorManager.TryAddAnchorAsync(anchorPose);
         if (anchorRequest.status.IsSuccess())
         {
@@ -394,8 +394,8 @@ public class ImageDetectionManager : MonoBehaviour
     {
         // Partiamo dalla posizione del quadro rilevato
         Vector3 imagePosition = trackedImage.transform.position;
-        Vector3 imageForward = trackedImage.transform.forward;
-        Vector3 imageRight = trackedImage.transform.right;
+        Vector3 imageForward = trackedImage.transform.forward; // z axis
+        Vector3 imageRight = trackedImage.transform.right; // x axis
 
         // Applichiamo l'offset specificato nei dati dell'opera
         Vector3 offsetPosition = imagePosition +

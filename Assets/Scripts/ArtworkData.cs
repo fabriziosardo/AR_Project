@@ -6,25 +6,26 @@ using UnityEngine;
 [System.Serializable]
 public class ArtworkData
 {
-    [Header("Identificazione")]
-    public string artworkName;              // Nome dell'opera per scopi di debug e UI
-    public string referenceImageName;       // Nome che corrisponde a quello nella Reference Image Library
-    
-    [Header("Personaggio")]
-    public GameObject characterPrefab;      // Il prefab del personaggio che spiega quest'opera
-    public float characterScale = 1.0f;     // Scala del personaggio (alcune opere potrebbero richiedere personaggi più grandi o piccoli)
-    
-    [Header("Posizionamento")]
-    public Vector3 characterOffset = Vector3.zero;  // Offset rispetto al centro del quadro dove posizionare il personaggio
-    public float distanceFromWall = 1.5f;          // Distanza dalla parete su cui è appeso il quadro
-    
-    [Header("Informazioni Opera")]
-    public string artistName;               // Nome dell'artista
-    public int yearCreated;                 // Anno di creazione
+    [Header("Artwork ID")]
+    public string artworkName;              // Artwork name for debugging and UI
+    public string referenceImageName;       // Reference name that matches the one in the Reference Image Library.
+
+    [Header("Artwork Details")]
+    public string artistName;               // Artist's name
+    public int yearCreated;                 // Year the artwork was created
     [TextArea(3, 5)]
-    public string description;              // Descrizione dell'opera
+    public string description;              // Description of the artwork
     
-    [Header("Dialoghi")]
+    [Header("Character")]
+    public GameObject characterPrefab;      // The character's prefab that explains this artwork. It should be a GameObject with a CharacterDialogue script attached to it.
+    public float characterScale = 1.0f;     // The scale of the character (some artworks may require larger or smaller characters).
+    
+    [Header("Position")]
+    public Vector3 characterOffset = Vector3.zero;  // Offset with respect to the center of the artwork where the character should be placed.
+    public float distanceFromWall = 1.5f;          // Distance from the wall where the artwork is hung.
+    
+    
+    [Header("Dialogues")]
     [TextArea(5, 10)]
-    public string[] dialogueLines;          // Array di stringhe per il dialogo del personaggio
+    public string[] dialogueLines;          // Set of dialogue lines that the character will say when the player interacts with the artwork.
 }

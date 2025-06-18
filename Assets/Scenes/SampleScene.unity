@@ -229,75 +229,8 @@ Transform:
   - {fileID: 751868136}
   - {fileID: 1634725719}
   - {fileID: 1131634694}
-  - {fileID: 713488828}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &713488827
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 713488828}
-  - component: {fileID: 713488830}
-  - component: {fileID: 713488829}
-  m_Layer: 0
-  m_Name: Anchor Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &713488828
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 713488827}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 549825414}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &713488829
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 713488827}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 728ad7fae8e460a4ba41265c7308d757, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <trackablesChanged>k__BackingField:
-    m_PersistentCalls:
-      m_Calls: []
-  m_AnchorPrefab: {fileID: 0}
---- !u!114 &713488830
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 713488827}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0cb9aa70a22847b5925ee5f067c10a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Camera: {fileID: 0}
-  m_OriginBaseGameObject: {fileID: 713488827}
-  m_CameraFloorOffsetObject: {fileID: 0}
-  m_RequestedTrackingOriginMode: 0
-  m_CameraYOffset: 1.1176
 --- !u!1 &751868135
 GameObject:
   m_ObjectHideFlags: 0
@@ -412,46 +345,43 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trackedImageManager: {fileID: 1131634695}
-  anchorManager: {fileID: 0}
   artworksDatabase:
   - artworkName: Test
     referenceImageName: Test
+    artistName: Paolo
+    yearCreated: 2000
+    description: An object
     characterPrefab: {fileID: -927199367670048503, guid: 83bd530bae4f6b1479ed1db9a1c8ada8, type: 3}
     characterScale: 1
     characterOffset: {x: 0, y: 0, z: 0}
     distanceFromWall: 1
-    artistName: Paolo
-    yearCreated: 2000
-    description: An object
     dialogueLines:
     - Ciao sono Paolo!
   - artworkName: One
     referenceImageName: One
+    artistName: Giorgio
+    yearCreated: 1111
+    description: WOW
     characterPrefab: {fileID: -927199367670048503, guid: 8059b1b31345c5c4abd07c34de60e35b, type: 3}
     characterScale: 2
     characterOffset: {x: 0, y: 0, z: 0}
     distanceFromWall: 0
-    artistName: Giorgio
-    yearCreated: 1111
-    description: WOW
     dialogueLines: []
   - artworkName: Two
     referenceImageName: Two
+    artistName: Pierluca
+    yearCreated: 2222
+    description: 
     characterPrefab: {fileID: 3371725182229659222, guid: 2d37f1ee7ae6de747b6c4a68aa2ecfdf, type: 3}
     characterScale: 1
     characterOffset: {x: 0, y: 0, z: 0}
     distanceFromWall: 0
-    artistName: Pierluca
-    yearCreated: 2222
-    description: 
     dialogueLines:
     - LOO
     - Squalooo
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 0
-  minTrackingTime: 2
-  useAnchors: 1
+    m_Bits: 256
 --- !u!1 &1448772232
 GameObject:
   m_ObjectHideFlags: 0

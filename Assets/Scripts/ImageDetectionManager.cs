@@ -9,59 +9,29 @@ public class ImageDetectionManager : MonoBehaviour
 {
     [Header("AR Configuration")]
     [SerializeField] private ARTrackedImageManager trackedImageManager;
-    [SerializeField] private ARAnchorManager anchorManager;
 
 
     [Header("Artworks Database")]
     [SerializeField] private ArtworkData[] artworksDatabase;
 
     [Header("Spawning Information")]
-    [SerializeField] private LayerMask groundLayerMask = 1; // Ground plane layer for raycasting.
-
-    [Header("Stability Settings")]
-    [SerializeField] private float minTrackingTime = 2.0f; // Minimum time before creating an anchor.
-    [SerializeField] private bool useAnchors = true; // Flag to enable/disable anchors.
+    [SerializeField] private LayerMask groundLayerMask; // Ground plane layer for raycasting.
 
 
     // Dictionary for quick lookup to artwork data by reference name.
     private Dictionary<string, ArtworkData> artworkLookup;
 
-    // Dictionary per tenere traccia dei personaggi già spawnati per ogni immagine
-    // private Dictionary<TrackableId, GameObject> spawnedCharacters;
-
-    // Private class for managing character states
-    [System.Serializable]
-    private class CharacterState
-    {
-        public GameObject character;
-        public ARAnchor anchor;
-        public bool isAnchored;
-        public float trackingStartTime;
-        public Vector3 lastKnownPosition;
-
-        public CharacterState(GameObject characterObj)
-        {
-            character = characterObj;
-            anchor = null;
-            isAnchored = false;
-            trackingStartTime = Time.time;
-            lastKnownPosition = Vector3.zero;
-        }
-    }
 
     // Dictionary for managing character states by trackable ID
-    private Dictionary<TrackableId, CharacterState> characterStates;
+    private Dictionary<TrackableId, GameObject> characterStates;
 
 
     void Start()
     {
         // Data structures initialization
         InitializeArtworkLookup();
-        //spawnedCharacters = new Dictionary<TrackableId, GameObject>();
-        characterStates = new Dictionary<TrackableId, CharacterState>();
+        characterStates = new Dictionary<TrackableId, GameObject>();
 
-
-        // Se non è stato assegnato il TrackedImageManager o l'AnchorManager nell'inspector, proviamo a trovarli
         if (trackedImageManager == null)
         {
             trackedImageManager = FindAnyObjectByType<ARTrackedImageManager>();
@@ -72,21 +42,7 @@ public class ImageDetectionManager : MonoBehaviour
             }
         }
 
-        
-        if (anchorManager == null && useAnchors)
-        {
-            anchorManager = FindAnyObjectByType<ARAnchorManager>();
-            if (anchorManager == null)
-            {
-                Debug.LogWarning("ARAnchorManager non trovato! Gli anchor non saranno disponibili. Aggiungi un ARAnchorManager alla scena per maggiore stabilità.");
-                useAnchors = false;
-            }
-        }
-
-
         // Ci registriamo agli eventi di tracking delle immagini
-        //trackedImageManager.trackedImagesChanged += OnTrackedImagesChanged;
-
         OnEnable();
 
     }
@@ -144,13 +100,10 @@ public class ImageDetectionManager : MonoBehaviour
         // Importante: deregistriamo gli eventi per evitare memory leaks
         if (trackedImageManager != null)
         {
-            //trackedImageManager.trackedImagesChanged -= OnTrackedImagesChanged;
             OnDisable();
         }
 
-        // Pulisci tutti gli anchor creati
         CleanupAllCharacters();
-
     }
 
 
@@ -158,13 +111,18 @@ public class ImageDetectionManager : MonoBehaviour
     private void HandleImageDetected(ARTrackedImage trackedImage)
     {
         string imageName = trackedImage.referenceImage.name;
+        if (string.IsNullOrEmpty(imageName))
+        {
+            Debug.LogWarning("Immagine rilevata senza nome valido!");
+            return;
+        }
+
         Debug.Log($"Immagine rilevata: {imageName}");
 
         // Cerchiamo i dati dell'opera corrispondente
         if (artworkLookup.TryGetValue(imageName, out ArtworkData artworkData))
         {
             // Se non abbiamo già spawnato un personaggio per questa immagine, lo creiamo
-            //if (!spawnedCharacters.ContainsKey(trackedImage.trackableId))
             if (!characterStates.ContainsKey(trackedImage.trackableId))
             {
                 SpawnCharacterForArtwork(trackedImage, artworkData);
@@ -176,129 +134,34 @@ public class ImageDetectionManager : MonoBehaviour
         }
     }
 
-    // Metodo chiamato quando un'immagine già tracciata viene aggiornata
-    /*
     private void HandleImageUpdated(ARTrackedImage trackedImage)
     {
-        // Se l'immagine è ancora tracciata bene, aggiorniamo la posizione del personaggio
-        if (trackedImage.trackingState == TrackingState.Tracking)
-        {
-            if (spawnedCharacters.TryGetValue(trackedImage.trackableId, out GameObject character))
-            {
-                UpdateCharacterPosition(trackedImage, character);
-            }
-        }
-        // Se l'immagine non è più tracciata bene, nascondiamo il personaggio
-        else if (trackedImage.trackingState == TrackingState.Limited ||
-                 trackedImage.trackingState == TrackingState.None)
-        {
-            if (spawnedCharacters.TryGetValue(trackedImage.trackableId, out GameObject character))
-            {
-                character.SetActive(false);
-            }
-        }
-    }
-    */
-    private void HandleImageUpdated(ARTrackedImage trackedImage)
-    {
-        if (!characterStates.TryGetValue(trackedImage.trackableId, out CharacterState characterState))
+        if (!characterStates.TryGetValue(trackedImage.trackableId, out GameObject character))
             return;
 
-        // Se il personaggio è già ancorato, non facciamo nulla
-        if (characterState.isAnchored && useAnchors)
-        {
-            // L'anchor mantiene automaticamente la posizione stabile
-            return;
-        }
+        Debug.Log($"Tracking state: {trackedImage.trackingState} per l'immagine: {trackedImage.referenceImage.name}");
 
         // Gestione basata sullo stato di tracking
         if (trackedImage.trackingState == TrackingState.Tracking)
         {
-            // Se stiamo usando gli anchor e abbiamo tracciato abbastanza a lungo, creiamo l'anchor
-            if (useAnchors && !characterState.isAnchored &&
-                Time.time - characterState.trackingStartTime >= minTrackingTime)
-            {
-                CreateAnchorForCharacter(trackedImage, characterState);
-            }
-            else if (!useAnchors)
-            {
-                // Se non usiamo anchor, aggiorna manualmente la posizione
-                UpdateCharacterPosition(trackedImage, characterState.character);
-            }
-
+            UpdateCharacterPose(trackedImage, character);
             // Assicurati che il personaggio sia visibile
-            if (!characterState.character.activeInHierarchy)
+            if (!character.activeInHierarchy)
             {
-                characterState.character.SetActive(true);
+                character.SetActive(true);
             }
         }
-        else if (trackedImage.trackingState == TrackingState.Limited)
+        //else if (trackedImage.trackingState == TrackingState.None)
+        else
         {
-            // Se il tracking è limitato ma abbiamo un anchor, mantieni il personaggio visibile
-            if (useAnchors && characterState.isAnchored)
-            {
-                // Non nascondere il personaggio, l'anchor mantiene la posizione
-                return;
-            }
-            else
-            {
-                // Senza anchor, nascondi temporaneamente il personaggio
-                characterState.character.SetActive(false);
-            }
-        }
-        else // TrackingState.None
-        {
-            // Se il tracking è completamente perso
-            if (useAnchors && characterState.isAnchored)
-            {
-                // Con anchor, mantieni il personaggio visibile
-                return;
-            }
-            else
-            {
-                // Senza anchor, nascondi il personaggio
-                characterState.character.SetActive(false);
-            }
+            character.SetActive(false);
         }
     }
 
-
-    // Metodo chiamato quando un'immagine non è più rilevata --- non lo uso perché è cambiata la libreria ARFoundation
-    /*
-    private void HandleImageLost(ARTrackedImage trackedImage)
-    {
-        if (spawnedCharacters.TryGetValue(trackedImage.trackableId, out GameObject character))
-        {
-            // Distruggiamo il personaggio quando l'immagine non è più tracciata
-            Destroy(character);
-            spawnedCharacters.Remove(trackedImage.trackableId);
-
-            // Handle removed event nella documentazione di Unity
-            //TrackableId removedImageTrackableId = trackedImage.Key;
-            //ARTrackedImage removedImage = trackedImage.Value;
-
-            Debug.Log($"Personaggio rimosso per immagine: {trackedImage.referenceImage.name}");
-        }
-    }
-    */
-
+    // Metodo chiamato quando un'immagine viene rimossa o persa
     private void HandleImageRemoved(TrackableId trackableId)
     {
-        if (characterStates.TryGetValue(trackableId, out CharacterState characterState))
-        {
-            // Se usiamo anchor, il personaggio può rimanere anche dopo che l'immagine è persa
-            if (useAnchors && characterState.isAnchored)
-            {
-                Debug.Log($"Immagine persa ma personaggio mantenuto tramite anchor");
-                // Opzionalmente, potresti voler nascondere il personaggio dopo un certo tempo
-                // StartCoroutine(HideCharacterAfterDelay(characterState, 10.0f));
-            }
-            else
-            {
-                // Senza anchor, rimuovi completamente il personaggio
-                CleanupCharacter(trackableId);
-            }
-        }
+        CleanupCharacter(trackableId);
     }
 
 
@@ -315,40 +178,17 @@ public class ImageDetectionManager : MonoBehaviour
         Vector3 characterPosition = CalculateCharacterPosition(trackedImage, artworkData);
 
         // Creiamo il personaggio
-        GameObject character = Instantiate(artworkData.characterPrefab, characterPosition, Quaternion.identity);
+        GameObject character = Instantiate(artworkData.characterPrefab, trackedImage.transform);
+        //GameObject character = Instantiate(artworkData.characterPrefab, characterPosition, Quaternion.identity);
 
         // Applichiamo la scala
         character.transform.localScale = Vector3.one * artworkData.characterScale;
-
-        // Crea un anchor per stabilizzare la posizione
-        /*
-        ARAnchor anchor = GetComponent<ARAnchorManager>()?.AddAnchor(new Pose(characterPosition, character.transform.rotation));
-        if (anchor != null)
-        {
-            character.transform.SetParent(anchor.transform);
-        }
-        */
-
-        /*
-        // Facciamo guardare il personaggio verso la camera
-        Vector3 lookDirection = Camera.main.transform.position - character.transform.position;
-        lookDirection.y = 0; // Manteniamo solo la rotazione orizzontale
-        if (lookDirection != Vector3.zero)
-        {
-            character.transform.rotation = Quaternion.LookRotation(lookDirection);
-        }
-
-        // Registriamo il personaggio nella nostra dictionary
-        spawnedCharacters[trackedImage.trackableId] = character;
-        */
 
         // Orientamento verso la camera
         OrientCharacterTowardsCamera(character);
 
         // Crea lo stato del personaggio
-        CharacterState characterState = new CharacterState(character);
-        characterStates[trackedImage.trackableId] = characterState;
-
+        characterStates[trackedImage.trackableId] = character;
 
         // Se il personaggio ha un componente per gestire i dialoghi, inizializziamolo
         CharacterDialogue dialogueComponent = character.GetComponent<CharacterDialogue>();
@@ -360,115 +200,44 @@ public class ImageDetectionManager : MonoBehaviour
         Debug.Log($"Personaggio spawnato per l'opera: {artworkData.artworkName}");
     }
 
-    private async Task CreateAnchorForCharacter(ARTrackedImage trackedImage, CharacterState characterState)
-    {
-        if (anchorManager == null || characterState.isAnchored)
-            return;
-
-        // Crea l'anchor nella posizione attuale del personaggio
-        Pose anchorPose = new Pose(characterState.character.transform.position,
-                                  characterState.character.transform.rotation);
-
-        // ARFoundation 6.2
-        var anchorRequest = await anchorManager.TryAddAnchorAsync(anchorPose);
-        if (anchorRequest.status.IsSuccess())
-        {
-            // L'anchor è stato creato con successo
-            characterState.anchor = anchorRequest.value;
-            characterState.isAnchored = true;
-
-            // Rendi il personaggio figlio dell'anchor per la stabilità
-            characterState.character.transform.SetParent(characterState.anchor.transform, true);
-
-            Debug.Log($"Anchor creato per il personaggio di {trackedImage.referenceImage.name}");
-        }
-        else
-        {
-            Debug.LogWarning($"Impossibile creare anchor per il personaggio di {trackedImage.referenceImage.name}");
-        }
-    }
-
-
     // Questo metodo calcola dove posizionare il personaggio rispetto al quadro
     private Vector3 CalculateCharacterPosition(ARTrackedImage trackedImage, ArtworkData artworkData)
     {
-        // Partiamo dalla posizione del quadro rilevato
-        Vector3 imagePosition = trackedImage.transform.position;
-        Vector3 imageForward = trackedImage.transform.forward; // z axis
-        Vector3 imageRight = trackedImage.transform.right; // x axis
-
         // Applichiamo l'offset specificato nei dati dell'opera
-        Vector3 offsetPosition = imagePosition +
-                                (imageRight * artworkData.characterOffset.x) +
-                                (trackedImage.transform.up * artworkData.characterOffset.y) +
-                                (imageForward * artworkData.characterOffset.z);
-
-        // Spostiamo il personaggio davanti al quadro della distanza specificata
-        Vector3 characterPosition = offsetPosition + (imageForward * artworkData.distanceFromWall);
-
-        // Ora dobbiamo trovare il pavimento usando un raycast verso il basso
-        /*
-        RaycastHit hit;
-        Vector3 rayOrigin = characterPosition + Vector3.up * 2.0f; // Partiamo da 2 metri sopra
-
-        if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 5.0f, groundLayerMask))
-        {
-            // Se troviamo il pavimento, posizioniamo il personaggio lì
-            characterPosition.y = hit.point.y;
-        }
-        else
-        {
-            // Se non troviamo il pavimento, usiamo una posizione di default
-            characterPosition.y = imagePosition.y - 1.0f; // 1 metro sotto il quadro
-            //characterPosition.y = 0.0; // hardcoding for debugging purposes
-            Debug.LogWarning("Pavimento non trovato per il posizionamento del personaggio. Usando posizione di default.");
-        }
-        */
-
+        Vector3 characterPosition = trackedImage.transform.position +
+                                    (trackedImage.transform.right * artworkData.characterOffset.x) +
+                                    (trackedImage.transform.up * artworkData.characterOffset.z) +
+                                    (trackedImage.transform.forward * artworkData.characterOffset.y);
+             
+        //Vector3 characterPosition = trackedImage.transform.position;
         // Usa il metodo per trovare la posizione del pavimento
         Vector3 groundPosition = FindBestGroundPosition(characterPosition);
-        characterPosition.y = groundPosition.y;
 
-
-        return characterPosition;
+        return groundPosition;
     }
 
-    /*
-    // Questo metodo aggiorna la posizione del personaggio quando l'immagine si muove
-    private void UpdateCharacterPosition(ARTrackedImage trackedImage, GameObject character)
-    {
-        string imageName = trackedImage.referenceImage.name;
-
-        if (artworkLookup.TryGetValue(imageName, out ArtworkData artworkData))
-        {
-            Vector3 newPosition = CalculateCharacterPosition(trackedImage, artworkData);
-            character.transform.position = newPosition;
-
-            // Aggiorniamo anche la rotazione per far guardare sempre il personaggio verso la camera
-            Vector3 lookDirection = Camera.main.transform.position - character.transform.position;
-            lookDirection.y = 0;
-            if (lookDirection != Vector3.zero)
-            {
-                character.transform.rotation = Quaternion.LookRotation(lookDirection);
-            }
-        }
-    }
-    */
-
-
-    // Aggiungi questo metodo al tuo ImageDetectionManager
     private Vector3 FindBestGroundPosition(Vector3 targetPosition)
     {
         // Prima prova con il raycast
-        RaycastHit hit;
-        Vector3 rayOrigin = targetPosition + Vector3.up * 2.0f;
+        RaycastHit hit_down;
+        RaycastHit hit_up;
 
-        if (Physics.Raycast(rayOrigin, Vector3.down, out hit, 5.0f, groundLayerMask))
+        Physics.Raycast(targetPosition, Vector3.down, out hit_down, 5.0f, groundLayerMask);
+        Physics.Raycast(targetPosition, Vector3.up, out hit_up, 5.0f, groundLayerMask);
+
+        if (hit_down.collider != null && hit_up.collider != null)
         {
-            Debug.Log("Pavimento trovato tramite raycast");
-            return hit.point;
+            return (Vector3.Distance(targetPosition, hit_down.point) < Vector3.Distance(targetPosition, hit_up.point)) ? hit_down.point : hit_up.point;
         }
-
+        else if (hit_down.collider != null)
+        {
+            return hit_down.point;
+        }
+        else if (hit_up.collider != null)
+        {
+            return hit_up.point;
+        }
+        
         // Se il raycast fallisce, cerca il plane AR più vicino
         ARPlane closestPlane = FindClosestARPlane(targetPosition);
         if (closestPlane != null)
@@ -488,7 +257,7 @@ public class ImageDetectionManager : MonoBehaviour
 
         // Come ultima risorsa, usa una posizione di default
         Debug.LogWarning("Pavimento non trovato, usando posizione default");
-        return new Vector3(targetPosition.x, 0.0f, targetPosition.z);
+        return new Vector3(targetPosition.x, targetPosition.y, targetPosition.z);
     }
 
     private ARPlane FindClosestARPlane(Vector3 position)
@@ -497,7 +266,7 @@ public class ImageDetectionManager : MonoBehaviour
         float closestDistance = float.MaxValue;
 
         // Trova tutti i plane AR attivi
-        ARPlane[] allPlanes = FindObjectsOfType<ARPlane>();
+        ARPlane[] allPlanes = FindObjectsByType<ARPlane>(FindObjectsSortMode.None);
 
         foreach (ARPlane plane in allPlanes)
         {
@@ -515,7 +284,7 @@ public class ImageDetectionManager : MonoBehaviour
         return closestPlane;
     }
 
-    private void UpdateCharacterPosition(ARTrackedImage trackedImage, GameObject character)
+    private void UpdateCharacterPose(ARTrackedImage trackedImage, GameObject character)
     {
         string imageName = trackedImage.referenceImage.name;
         
@@ -533,27 +302,22 @@ public class ImageDetectionManager : MonoBehaviour
         lookDirection.y = 0;
         if (lookDirection != Vector3.zero)
         {
-            character.transform.rotation = Quaternion.LookRotation(lookDirection);
+            character.transform.rotation = Quaternion.LookRotation(lookDirection) * Quaternion.Euler(0, 90, 0); 
         }
     }
     
     private void CleanupCharacter(TrackableId trackableId)
     {
-        if (characterStates.TryGetValue(trackableId, out CharacterState characterState))
+        if (characterStates.TryGetValue(trackableId, out GameObject character))
         {
-            // Distruggi l'anchor se presente
-            if (characterState.anchor != null)
-            {
-                anchorManager.TryRemoveAnchor(characterState.anchor);
-            }
+            Debug.Log($"Immagine persa, rimuovo il personaggio per trackableId: {trackableId}");
             
             // Distruggi il personaggio
-            if (characterState.character != null)
+            if (character != null)
             {
-                Destroy(characterState.character);
+                Destroy(character);
             }
             
-            characterStates.Remove(trackableId);
         }
     }
     

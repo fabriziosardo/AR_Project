@@ -459,7 +459,7 @@ public class ImageDetectionManager : MonoBehaviour
     // Aggiungi questo metodo al tuo ImageDetectionManager
     private Vector3 FindBestGroundPosition(Vector3 targetPosition)
     {
-        // Prima prova con il raycast come già fai
+        // Prima prova con il raycast
         RaycastHit hit;
         Vector3 rayOrigin = targetPosition + Vector3.up * 2.0f;
 

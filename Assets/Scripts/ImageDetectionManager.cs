@@ -28,6 +28,8 @@ public class ImageDetectionManager : MonoBehaviour
 
     void Start()
     {
+        Debug.Log($"[DEBUG] Avviato script {this.GetType()} nella scena {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
+
         // Data structures initialization
         InitializeArtworkLookup();
         characterStates = new Dictionary<TrackableId, GameObject>();

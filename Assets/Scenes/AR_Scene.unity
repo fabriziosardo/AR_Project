@@ -310,8 +310,8 @@ MonoBehaviour:
     referenceImageName: two
     artistName: 
     yearCreated: 0
-    description: 
-    characterPrefab: {fileID: 1262658914468034039, guid: 061a4fbfcd2c75b4d91c14e4b127c9d2, type: 3}
+    description: ciao!
+    characterPrefab: {fileID: 2664764429681458151, guid: c495b129020d43e4e8e8b5d909c181be, type: 3}
     characterScale: 0
     characterOffset: {x: 0, y: 0, z: 0}
     distanceFromWall: 0

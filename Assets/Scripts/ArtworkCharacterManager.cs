@@ -1,8 +1,10 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using TMPro;
 
 public class ArtworkCharacterManager : MonoBehaviour
 {
@@ -13,6 +15,7 @@ public class ArtworkCharacterManager : MonoBehaviour
 
     private ARTrackedImageManager _trackedImageManager;
     private Dictionary<string, GameObject> _characters;
+    private Dictionary<string, string> _artworks_descriptions;
 
 
     void Start()
@@ -26,6 +29,7 @@ public class ArtworkCharacterManager : MonoBehaviour
         _trackedImageManager.trackablesChanged.AddListener(OnTrackedImagesChanged);
 
         _characters = new Dictionary<string, GameObject>();
+        _artworks_descriptions = new Dictionary<string, string>();
         InstantiateCharacters();
     }
 
@@ -43,6 +47,14 @@ public class ArtworkCharacterManager : MonoBehaviour
             characterInstance.name = artwork.characterPrefab.name + "_" + artwork.artworkName; // Unique name for the character instance
             characterInstance.gameObject.SetActive(false);
             _characters.Add(artwork.referenceImageName, characterInstance);
+
+            if (artwork.description == null)
+            {
+                Debug.LogWarning($"Description is missing for the artwork: {artwork.artworkName}");
+                continue;
+            }
+
+            _artworks_descriptions.Add(artwork.referenceImageName, artwork.description);
         }
     }
 
@@ -83,6 +95,12 @@ public class ArtworkCharacterManager : MonoBehaviour
             return;
         }
 
+        if (trackedImage.referenceImage.name == null)
+        {
+            Debug.LogWarning("Tracked image is not present in the current library.");
+            return;
+        }
+
         _characters.TryGetValue(trackedImage.referenceImage.name, out var characterInstance);
 
         if (trackedImage.trackingState is TrackingState.Limited or TrackingState.None)
@@ -102,6 +120,8 @@ public class ArtworkCharacterManager : MonoBehaviour
 
             //characterInstance.transform.rotation = trackedImage.transform.rotation;
             OrientCharacterTowardsCamera(characterInstance);
+
+            StartCoroutine(ShowText(characterInstance, trackedImage.referenceImage.name));
         }
     }
 
@@ -171,8 +191,50 @@ public class ArtworkCharacterManager : MonoBehaviour
         lookDirection.y = 0;
         if (lookDirection != Vector3.zero)
         {
-            character.transform.rotation = Quaternion.LookRotation(lookDirection) * Quaternion.Euler(0, 90, 0); 
+            character.transform.rotation = Quaternion.LookRotation(lookDirection); //* Quaternion.Euler(0, 90, 0); 
         }
+    }
+
+    private IEnumerator ShowText(GameObject characterInstance, string referenceImageName)
+    {
+        float delayBeforeStart = 1.0f;
+        float typingSpeed = 0.4f;
+        yield return new WaitForSeconds(delayBeforeStart);
+
+        //_characters.TryGetValue(trackedImage.referenceImage.name, out var characterInstance);
+        TMP_Text textField = characterInstance.GetComponentInChildren<TMP_Text>();
+
+        _artworks_descriptions.TryGetValue(referenceImageName, out var fullText);
+        //Debug.Log($"Reference Image Name --{referenceImageName}--; value: ---{fullText}---");
+
+        // separare il fulltext in chunks
+
+        if (fullText != null)
+        {
+            Debug.Log($"Full Text: *{fullText}*");
+        }
+
+
+        if (textField != null)
+        {
+            Debug.Log($"Textfield: *{textField}*");
+        }
+
+
+        if (fullText != null && textField != null)
+        {
+            // Questo per far vedere i caratteri uno alla volta
+/*             textField.text = "";
+            foreach (char c in fullText)
+            {
+                textField.text += c;
+                yield return new WaitForSeconds(typingSpeed);
+            }
+ */     
+            textField.text = fullText;
+
+        }
+
     }
 
 

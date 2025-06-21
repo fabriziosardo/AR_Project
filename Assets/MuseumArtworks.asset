@@ -37,3 +37,33 @@ MonoBehaviour:
     m_SpecifySize: 1
     m_Name: two
     m_Texture: {fileID: 2800000, guid: bc72be12d094fc84a849f4665bd8c264, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 4718062445017590464
+      m_GuidHigh: 4446472976667068065
+    m_SerializedTextureGuid:
+      m_GuidLow: 4568020899304869336
+      m_GuidHigh: 15453936367332504088
+    m_Size: {x: 0.412, y: 0.6}
+    m_SpecifySize: 1
+    m_Name: three
+    m_Texture: {fileID: 2800000, guid: 35a08dd8dece3f64183258643f6977d6, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 4807578784682755046
+      m_GuidHigh: 2685959895195269013
+    m_SerializedTextureGuid:
+      m_GuidLow: 15344956177998327896
+      m_GuidHigh: 13695905884923150939
+    m_Size: {x: 0.5, y: 0.5}
+    m_SpecifySize: 1
+    m_Name: four
+    m_Texture: {fileID: 2800000, guid: c386b0583c57d4f45bc2069cd6a111be, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 5730171397048770001
+      m_GuidHigh: 3148472441869718941
+    m_SerializedTextureGuid:
+      m_GuidLow: 14917239025733515558
+      m_GuidHigh: 3475376378014804235
+    m_Size: {x: 0.5, y: 0.5}
+    m_SpecifySize: 1
+    m_Name: five
+    m_Texture: {fileID: 2800000, guid: e670b926addbcf040b295b0867043b30, type: 3}

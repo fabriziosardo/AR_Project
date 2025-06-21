@@ -39,18 +39,18 @@ public class ArtworkCharacterManager : MonoBehaviour
         {
             if (artwork.characterPrefab == null)
             {
-                Debug.LogWarning($"Character prefab is missing for artwork: {artwork.artworkName}");
+                Debug.LogWarning($"Character prefab is missing for artwork: {artwork.referenceImageName}");
                 continue;
             }
 
             GameObject characterInstance = Instantiate(artwork.characterPrefab, Vector3.zero, Quaternion.identity);
-            characterInstance.name = artwork.characterPrefab.name + "_" + artwork.artworkName; // Unique name for the character instance
+            characterInstance.name = artwork.characterPrefab.name + "_" + artwork.referenceImageName; // Unique name for the character instance
             characterInstance.gameObject.SetActive(false);
             _characters.Add(artwork.referenceImageName, characterInstance);
 
             if (artwork.description == null)
             {
-                Debug.LogWarning($"Description is missing for the artwork: {artwork.artworkName}");
+                Debug.LogWarning($"Description is missing for the artwork: {artwork.referenceImageName}");
                 continue;
             }
 
@@ -114,37 +114,62 @@ public class ArtworkCharacterManager : MonoBehaviour
 
         if (characterInstance != null)
         {
-            characterInstance.gameObject.SetActive(true);
-            //characterInstance.transform.position = trackedImage.transform.position;
-            characterInstance.transform.position = CalculateCharacterPosition(trackedImage, artworksDatabase.Find(a => a.referenceImageName == trackedImage.referenceImage.name));
+            /*             characterInstance.gameObject.SetActive(true);
+                        //characterInstance.transform.position = trackedImage.transform.position;
+                        characterInstance.transform.position = CalculateCharacterPosition(trackedImage, artworksDatabase.Find(a => a.referenceImageName == trackedImage.referenceImage.name));
 
-            //characterInstance.transform.rotation = trackedImage.transform.rotation;
-            OrientCharacterTowardsCamera(characterInstance);
+                        //characterInstance.transform.rotation = trackedImage.transform.rotation;
+                        OrientCharacterTowardsCamera(characterInstance);
 
-            if (characterInstance.GetComponentInChildren<TMP_Text>()?.text == "")
+                        if (characterInstance.GetComponentInChildren<TMP_Text>()?.text == "")
+                        {
+                            Debug.LogWarning("Starting coroutine showtext");
+                            ShowText(characterInstance, trackedImage.referenceImage.name);
+                        }
+             */
+
+            var artworkData = artworksDatabase.Find(a => a.referenceImageName == trackedImage.referenceImage.name);
+
+            if (TryCalculateCharacterPosition(trackedImage, artworkData, out Vector3 newPosition))
             {
-                Debug.LogWarning("Starting coroutine showtext");
-                ShowText(characterInstance, trackedImage.referenceImage.name);
+                characterInstance.transform.position = newPosition;
+                characterInstance.gameObject.SetActive(true);
+                OrientCharacterTowardsCamera(characterInstance);
+
+                if (characterInstance.GetComponentInChildren<TMP_Text>()?.text == "")
+                {
+                    Debug.LogWarning("Starting coroutine showtext");
+                    ShowText(characterInstance, trackedImage.referenceImage.name);
+                }
+            }
+            else
+            {
+                characterInstance.gameObject.SetActive(false);
+                Debug.Log($"Character for {trackedImage.referenceImage.name} hidden: no ground found.");
             }
         }
     }
 
-    private Vector3 CalculateCharacterPosition(ARTrackedImage trackedImage, ArtworkData artworkData)
+    private bool TryCalculateCharacterPosition(ARTrackedImage trackedImage, ArtworkData artworkData, out Vector3 characterPosition)
     {
         // Applichiamo l'offset specificato nei dati dell'opera
-        Vector3 characterPosition = trackedImage.transform.position +
+        Vector3 estimatedPosition = trackedImage.transform.position +
                                     (trackedImage.transform.right * artworkData.characterOffset.x) +
                                     (trackedImage.transform.up * artworkData.characterOffset.z) +
                                     (trackedImage.transform.forward * artworkData.characterOffset.y); // up e forward sono invertiti perché l'immagine è appesa
 
-        //Vector3 characterPosition = trackedImage.transform.position;
         // Usa il metodo per trovare la posizione del pavimento
-        Vector3 groundPosition = FindBestGroundPosition(characterPosition);
+        if (TryFindBestGroundPosition(estimatedPosition, out Vector3 groundPosition))
+        {
+            characterPosition = groundPosition;
+            return true;
+        }
 
-        return groundPosition;
+        characterPosition = Vector3.zero;
+        return false;
     }
 
-    private Vector3 FindBestGroundPosition(Vector3 targetPosition)
+    private bool TryFindBestGroundPosition(Vector3 targetPosition, out Vector3 groundPosition)
     {
         // Prima prova con il raycast
         RaycastHit hit_down;
@@ -153,12 +178,15 @@ public class ArtworkCharacterManager : MonoBehaviour
 
         if (hit_down.collider != null)
         {
-            return hit_down.point;
+            groundPosition = hit_down.point;
+            return true;
         }
 
         // Come ultima risorsa, usa una posizione di default
         Debug.LogWarning("Pavimento non trovato, usando posizione default");
-        return new Vector3(targetPosition.x, targetPosition.y, targetPosition.z);
+
+        groundPosition = targetPosition;
+        return false;
     }
 
     private void OrientCharacterTowardsCamera(GameObject character)
@@ -180,7 +208,6 @@ public class ArtworkCharacterManager : MonoBehaviour
         _artworks_descriptions.TryGetValue(referenceImageName, out var fullText);
         //Debug.Log($"Reference Image Name --{referenceImageName}--; value: ---{fullText}---");
 
-        // separare il fulltext in chunks
 
         if (fullText != null && textField != null && fullText != textField.text)
         {

@@ -7,7 +7,6 @@ using UnityEngine;
 public class ArtworkData
 {
     [Header("Artwork Details")]
-    public string artworkName;              // Artwork name for debugging and UI
     public string referenceImageName;       // Reference name that matches the one in the Reference Image Library.
 
     [TextArea(3, 5)]

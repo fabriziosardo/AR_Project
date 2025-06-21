@@ -281,7 +281,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_SerializedLibrary: {fileID: 11400000, guid: fd4bef5b60d80614db71879fe906694f, type: 2}
-  m_MaxNumberOfMovingImages: 1
+  m_MaxNumberOfMovingImages: 5
   m_TrackedImagePrefab: {fileID: 0}
 --- !u!114 &1441056773
 MonoBehaviour:
@@ -298,24 +298,39 @@ MonoBehaviour:
   artworksDatabase:
   - artworkName: one
     referenceImageName: one
-    artistName: 
-    yearCreated: 0
-    description: 
-    characterPrefab: {fileID: 2664764429681458151, guid: 7b32ae8ba0c12e3468de0df72d01f785, type: 3}
-    characterScale: 0
-    characterOffset: {x: 0, y: 0, z: 0}
-    distanceFromWall: 0
-    dialogueLines: []
+    description: "1 is significant in fraud detection. Benford\u2019s law shows us
+      that in real life situations, 1 appears as the first digit in numbers more
+      often than 2, which appears more often than 3 etc."
+    characterPrefab: {fileID: 2664764429681458151, guid: 1fb09c094630c7c459191b8cf338b9b4, type: 3}
+    characterOffset: {x: 0.6, y: 0, z: 0.8}
   - artworkName: two
     referenceImageName: two
-    artistName: 
-    yearCreated: 0
-    description: ciao!
-    characterPrefab: {fileID: 2664764429681458151, guid: c495b129020d43e4e8e8b5d909c181be, type: 3}
-    characterScale: 0
-    characterOffset: {x: 0, y: 0, z: 0}
-    distanceFromWall: 0
-    dialogueLines: []
+    description: "Only one prime number is even, and no doubt you\u2019ve guessed
+      by now that it\u2019s 2."
+    characterPrefab: {fileID: 2664764429681458151, guid: 6e43c3c42c22add458e807692f4b9ee1, type: 3}
+    characterOffset: {x: 0.6, y: 0, z: 0.8}
+  - artworkName: three
+    referenceImageName: three
+    description: Take any number and multiply it by 3. Now add up the digits of the
+      new number. Whatever number you begin with, the result will always be divisible
+      by 3.
+    characterPrefab: {fileID: 2664764429681458151, guid: eccee58aeb6f744489cde5497430d516, type: 3}
+    characterOffset: {x: 0.6, y: 0, z: 0.8}
+  - artworkName: four
+    referenceImageName: four
+    description: Four colors are sufficient to color any map. This conjecture by
+      Francis Guthrie in 1853 was the first major mathematical theorem to be proved
+      using a computer. The honors went to programmers Kenneth Appel and Wolfgang
+      Haken in 1976.
+    characterPrefab: {fileID: 2664764429681458151, guid: 748b11dc1777a3043b534ae9cb4241cf, type: 3}
+    characterOffset: {x: 0.6, y: 0, z: 0.8}
+  - artworkName: five
+    referenceImageName: five
+    description: 'There are only five platonic solids: tetrahedron (4 faces); cube
+      (6 faces); octahedron (8 faces); dodecahedron (12 faces); icosohedron (20 faces).
+      The platonic solids are completely regular, and so can be used as fair dice.'
+    characterPrefab: {fileID: 2664764429681458151, guid: d68b71d745977f842a87eda9bbcb6ea3, type: 3}
+    characterOffset: {x: 0.6, y: 0, z: 0.8}
 --- !u!114 &1441056774
 MonoBehaviour:
   m_ObjectHideFlags: 0

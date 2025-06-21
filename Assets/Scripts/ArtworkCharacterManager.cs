@@ -103,7 +103,7 @@ public class ArtworkCharacterManager : MonoBehaviour
 
         _characters.TryGetValue(trackedImage.referenceImage.name, out var characterInstance);
 
-        if (trackedImage.trackingState is TrackingState.Limited or TrackingState.None)
+        if (trackedImage.trackingState is not TrackingState.Tracking)
         {
             if (characterInstance != null)
             {
@@ -121,7 +121,11 @@ public class ArtworkCharacterManager : MonoBehaviour
             //characterInstance.transform.rotation = trackedImage.transform.rotation;
             OrientCharacterTowardsCamera(characterInstance);
 
-            StartCoroutine(ShowText(characterInstance, trackedImage.referenceImage.name));
+            if (characterInstance.GetComponentInChildren<TMP_Text>()?.text == "")
+            {
+                Debug.LogWarning("Starting coroutine showtext");
+                ShowText(characterInstance, trackedImage.referenceImage.name);
+            }
         }
     }
 
@@ -144,41 +148,13 @@ public class ArtworkCharacterManager : MonoBehaviour
     {
         // Prima prova con il raycast
         RaycastHit hit_down;
-        RaycastHit hit_up;
 
         Physics.Raycast(targetPosition, Vector3.down, out hit_down, 5.0f);
-        Physics.Raycast(targetPosition, Vector3.up, out hit_up, 5.0f);
 
-        if (hit_down.collider != null && hit_up.collider != null)
-        {
-            return (Vector3.Distance(targetPosition, hit_down.point) < Vector3.Distance(targetPosition, hit_up.point)) ? hit_down.point : hit_up.point;
-        }
-        else if (hit_down.collider != null)
+        if (hit_down.collider != null)
         {
             return hit_down.point;
         }
-        else if (hit_up.collider != null)
-        {
-            return hit_up.point;
-        }
-
-        // Se il raycast fallisce, cerca il plane AR più vicino
-        /*         
-        ARPlane closestPlane = FindClosestARPlane(targetPosition);
-        if (closestPlane != null)
-        {
-            // Proietta la posizione target sul plane più vicino
-            Vector3 planePosition = closestPlane.transform.position;
-            Vector3 planeNormal = closestPlane.transform.up;
-
-            // Calcola la proiezione del punto target sul piano
-            Vector3 toTarget = targetPosition - planePosition;
-            float distanceToPlane = Vector3.Dot(toTarget, planeNormal);
-            Vector3 projectedPosition = targetPosition - (planeNormal * distanceToPlane);
-
-            Debug.Log("Pavimento trovato tramite plane AR più vicino");
-            return projectedPosition;
-        } */
 
         // Come ultima risorsa, usa una posizione di default
         Debug.LogWarning("Pavimento non trovato, usando posizione default");
@@ -195,12 +171,9 @@ public class ArtworkCharacterManager : MonoBehaviour
         }
     }
 
-    private IEnumerator ShowText(GameObject characterInstance, string referenceImageName)
+     
+    private void ShowText(GameObject characterInstance, string referenceImageName)
     {
-        float delayBeforeStart = 1.0f;
-        float typingSpeed = 0.4f;
-        yield return new WaitForSeconds(delayBeforeStart);
-
         //_characters.TryGetValue(trackedImage.referenceImage.name, out var characterInstance);
         TMP_Text textField = characterInstance.GetComponentInChildren<TMP_Text>();
 
@@ -209,33 +182,13 @@ public class ArtworkCharacterManager : MonoBehaviour
 
         // separare il fulltext in chunks
 
-        if (fullText != null)
+        if (fullText != null && textField != null && fullText != textField.text)
         {
-            Debug.Log($"Full Text: *{fullText}*");
-        }
-
-
-        if (textField != null)
-        {
-            Debug.Log($"Textfield: *{textField}*");
-        }
-
-
-        if (fullText != null && textField != null)
-        {
-            // Questo per far vedere i caratteri uno alla volta
-/*             textField.text = "";
-            foreach (char c in fullText)
-            {
-                textField.text += c;
-                yield return new WaitForSeconds(typingSpeed);
-            }
- */     
             textField.text = fullText;
-
         }
 
-    }
+    } 
+
 
 
 }

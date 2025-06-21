@@ -296,39 +296,36 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   artworksDatabase:
-  - artworkName: one
-    referenceImageName: one
-    description: "1 is significant in fraud detection. Benford\u2019s law shows us
-      that in real life situations, 1 appears as the first digit in numbers more
-      often than 2, which appears more often than 3 etc."
+  - referenceImageName: starwars
+    description: "It began in 1977 with Star Wars: A New Hope. The Death Star, the
+      Force, rebellion. A farm boy, a princess, a smuggler\u2026 and the Empire.
+      But my legacy of fear began long before that."
     characterPrefab: {fileID: 2664764429681458151, guid: 1fb09c094630c7c459191b8cf338b9b4, type: 3}
     characterOffset: {x: 0.6, y: 0, z: 0.8}
-  - artworkName: two
-    referenceImageName: two
-    description: "Only one prime number is even, and no doubt you\u2019ve guessed
-      by now that it\u2019s 2."
+  - referenceImageName: belle
+    description: 'In 1991, Disney told our tale: Beauty and the Beast. A castle under
+      a spell, a cursed prince, and a girl who loved books more than anything. I
+      found adventure, kindness... and love beyond appearances.'
     characterPrefab: {fileID: 2664764429681458151, guid: 6e43c3c42c22add458e807692f4b9ee1, type: 3}
     characterOffset: {x: 0.6, y: 0, z: 0.8}
-  - artworkName: three
-    referenceImageName: three
-    description: Take any number and multiply it by 3. Now add up the digits of the
-      new number. Whatever number you begin with, the result will always be divisible
-      by 3.
+  - referenceImageName: looney
+    description: "Looney Tunes? It all started in the \u201830s\u2014pure animated
+      chaos! I, Daffy Duck, quacked in with my 1937 debut. I\u2019ve been dodging
+      hunters, stealing scenes, and outshining that rabbit ever since!"
     characterPrefab: {fileID: 2664764429681458151, guid: eccee58aeb6f744489cde5497430d516, type: 3}
     characterOffset: {x: 0.6, y: 0, z: 0.8}
-  - artworkName: four
-    referenceImageName: four
-    description: Four colors are sufficient to color any map. This conjecture by
-      Francis Guthrie in 1853 was the first major mathematical theorem to be proved
-      using a computer. The honors went to programmers Kenneth Appel and Wolfgang
-      Haken in 1976.
+  - referenceImageName: mickey
+    description: "Oh boy! I first whistled onto screens in 1928\u2019s Steamboat
+      Willie. Black and white, but full of charm! And with synchronized sound for
+      the first time!  That little steamboat launched a whole world of imagination\u2014and
+      it was just the beginning, pal!"
     characterPrefab: {fileID: 2664764429681458151, guid: 748b11dc1777a3043b534ae9cb4241cf, type: 3}
     characterOffset: {x: 0.6, y: 0, z: 0.8}
-  - artworkName: five
-    referenceImageName: five
-    description: 'There are only five platonic solids: tetrahedron (4 faces); cube
-      (6 faces); octahedron (8 faces); dodecahedron (12 faces); icosohedron (20 faces).
-      The platonic solids are completely regular, and so can be used as fair dice.'
+  - referenceImageName: snowwhite
+    description: "In 1937, Walt Disney brought my tale to life in Snow White and
+      the Seven Dwarfs\u2014the first full-length animated film! There were dwarfs,
+      danger, and love\u2019s first kiss. And oh! An evil queen gave me a strange
+      apple!"
     characterPrefab: {fileID: 2664764429681458151, guid: d68b71d745977f842a87eda9bbcb6ea3, type: 3}
     characterOffset: {x: 0.6, y: 0, z: 0.8}
 --- !u!114 &1441056774

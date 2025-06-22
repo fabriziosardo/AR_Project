@@ -17,6 +17,7 @@ public class ArtworkCharacterManager : MonoBehaviour
     private Dictionary<string, GameObject> _characters;
     private Dictionary<string, string> _artworks_descriptions;
 
+    public bool defaultSpawn = true;
 
     void Start()
     {
@@ -114,20 +115,7 @@ public class ArtworkCharacterManager : MonoBehaviour
 
         if (characterInstance != null)
         {
-            /*             characterInstance.gameObject.SetActive(true);
-                        //characterInstance.transform.position = trackedImage.transform.position;
-                        characterInstance.transform.position = CalculateCharacterPosition(trackedImage, artworksDatabase.Find(a => a.referenceImageName == trackedImage.referenceImage.name));
-
-                        //characterInstance.transform.rotation = trackedImage.transform.rotation;
-                        OrientCharacterTowardsCamera(characterInstance);
-
-                        if (characterInstance.GetComponentInChildren<TMP_Text>()?.text == "")
-                        {
-                            Debug.LogWarning("Starting coroutine showtext");
-                            ShowText(characterInstance, trackedImage.referenceImage.name);
-                        }
-             */
-
+        
             var artworkData = artworksDatabase.Find(a => a.referenceImageName == trackedImage.referenceImage.name);
 
             if (TryCalculateCharacterPosition(trackedImage, artworkData, out Vector3 newPosition))
@@ -138,7 +126,6 @@ public class ArtworkCharacterManager : MonoBehaviour
 
                 if (characterInstance.GetComponentInChildren<TMP_Text>()?.text == "")
                 {
-                    Debug.LogWarning("Starting coroutine showtext");
                     ShowText(characterInstance, trackedImage.referenceImage.name);
                 }
             }
@@ -152,16 +139,19 @@ public class ArtworkCharacterManager : MonoBehaviour
 
     private bool TryCalculateCharacterPosition(ARTrackedImage trackedImage, ArtworkData artworkData, out Vector3 characterPosition)
     {
-        // Applichiamo l'offset specificato nei dati dell'opera
+        // Applying the offset to the tracked image position
         Vector3 estimatedPosition = trackedImage.transform.position +
                                     (trackedImage.transform.right * artworkData.characterOffset.x) +
                                     (trackedImage.transform.up * artworkData.characterOffset.z) +
-                                    (trackedImage.transform.forward * artworkData.characterOffset.y); // up e forward sono invertiti perché l'immagine è appesa
+                                    (trackedImage.transform.forward * artworkData.characterOffset.y);
 
-        // Usa il metodo per trovare la posizione del pavimento
         if (TryFindBestGroundPosition(estimatedPosition, out Vector3 groundPosition))
         {
             characterPosition = groundPosition;
+            return true;
+        }else if (defaultSpawn)
+        {
+            characterPosition = estimatedPosition;
             return true;
         }
 
@@ -171,7 +161,7 @@ public class ArtworkCharacterManager : MonoBehaviour
 
     private bool TryFindBestGroundPosition(Vector3 targetPosition, out Vector3 groundPosition)
     {
-        // Prima prova con il raycast
+        // First, try to find the ground using a raycast downwards
         RaycastHit hit_down;
 
         Physics.Raycast(targetPosition, Vector3.down, out hit_down, 5.0f);
@@ -182,8 +172,7 @@ public class ArtworkCharacterManager : MonoBehaviour
             return true;
         }
 
-        // Come ultima risorsa, usa una posizione di default
-        Debug.LogWarning("Pavimento non trovato, usando posizione default");
+        Debug.LogWarning("Floor not found with raycast downwards, using the default position.");
 
         groundPosition = targetPosition;
         return false;
@@ -195,27 +184,21 @@ public class ArtworkCharacterManager : MonoBehaviour
         lookDirection.y = 0;
         if (lookDirection != Vector3.zero)
         {
-            character.transform.rotation = Quaternion.LookRotation(lookDirection); //* Quaternion.Euler(0, 90, 0); 
+            character.transform.rotation = Quaternion.LookRotation(lookDirection);
         }
     }
 
      
     private void ShowText(GameObject characterInstance, string referenceImageName)
     {
-        //_characters.TryGetValue(trackedImage.referenceImage.name, out var characterInstance);
         TMP_Text textField = characterInstance.GetComponentInChildren<TMP_Text>();
 
         _artworks_descriptions.TryGetValue(referenceImageName, out var fullText);
-        //Debug.Log($"Reference Image Name --{referenceImageName}--; value: ---{fullText}---");
-
 
         if (fullText != null && textField != null && fullText != textField.text)
         {
             textField.text = fullText;
         }
-
     } 
-
-
 
 }

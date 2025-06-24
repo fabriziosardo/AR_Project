@@ -328,6 +328,7 @@ MonoBehaviour:
       apple!"
     characterPrefab: {fileID: 2664764429681458151, guid: d68b71d745977f842a87eda9bbcb6ea3, type: 3}
     characterOffset: {x: 0.6, y: 0, z: 0.8}
+  defaultSpawn: 0
 --- !u!114 &1441056774
 MonoBehaviour:
   m_ObjectHideFlags: 0
